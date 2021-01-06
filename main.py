@@ -1,3 +1,4 @@
+import os
 import sys
 import signal
 import argparse
@@ -145,7 +146,7 @@ class Main:
     
     def emulate(self):
         if self.emulating_proccess is not None:
-            self.emulating_proccess.terminate()
+            os.killpg(os.getpgid(self.emulating_proccess.pid), signal.SIGTERM)
             self.emulating_proccess = None
         monitor = self.monitors[self.active_monitor]
         self.emulating_proccess = subprocess.Popen(
@@ -153,7 +154,8 @@ class Main:
                 self.fps_rate, monitor.width, monitor.height, monitor.X, monitor.Y
             ),
             shell=True,
-            stdout=subprocess.DEVNULL
+            stdout=subprocess.DEVNULL,
+            preexec_fn=os.setsid
         )
         self.emulating_monitor = monitor
         self.update_status()
